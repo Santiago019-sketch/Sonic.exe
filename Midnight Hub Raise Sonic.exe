@@ -60,11 +60,11 @@ OrionLib:MakeNotification({
 })
 
 -- Variables for toggles
-local Delay = 0.1
-local AutoClickEnabled = false
-local AutoCollectEnabled = false
-local AutoBuyFoodEnabled = false
-local AutoGetRentEnabled = false
+_G.Delay = 0.1
+_G.AutoClick = false
+_G.AutoCollect = false
+_G.AutoBuyFood = false
+_G.AutoGetRent = false
 
 -- Delay Textbox
 FarmingSection:AddTextbox({
@@ -72,25 +72,68 @@ FarmingSection:AddTextbox({
     Default = "0.1",
     TextDisappear = true,
     Callback = function(Value)
-        Delay = tonumber(Value) or 0.1
+        _G.Delay = tonumber(Value) or 0.1
     end
 })
+
+-- Auto Click Function
+local function AutoClickFunction()
+    while _G.AutoClick and task.wait(_G.Delay) do
+        local Sonic = workspace:FindFirstChild("Sonic")
+        if Sonic and Sonic:FindFirstChild("Sonic") then
+            local ClickDetector = Sonic.Sonic:FindFirstChild("ClickDetector")
+            if ClickDetector then
+                fireclickdetector(ClickDetector)
+            end
+        end
+    end
+end
+
+-- Auto Collect Function
+local function AutoCollectFunction()
+    while _G.AutoCollect and task.wait(_G.Delay) do
+        for _, ring in ipairs(workspace:GetDescendants()) do
+            if ring.Name == "Ring" and ring:IsA("BasePart") then
+                firetouchinterest(Character.Head, ring, 0)
+                task.wait()
+                firetouchinterest(Character.Head, ring, 1)
+            end
+        end
+    end
+end
+
+-- Auto Buy Food Function
+local function AutoBuyFoodFunction()
+    while _G.AutoBuyFood and task.wait(1) do
+        local Food = workspace:FindFirstChild("Food")
+        if Food and not Food.Full.Value then
+            ReplicatedStorage.Buy:FireServer("Sonic Food")
+        end
+    end
+end
+
+-- Auto Get Rent Function
+local function AutoGetRentFunction()
+    while _G.AutoGetRent and task.wait(1) do
+        local CanGetRent = ReplicatedStorage:WaitForChild("CanGetRent").Value
+        local SonicEXE = ReplicatedStorage:WaitForChild("SonicEXE").Value
+        
+        if CanGetRent and SonicEXE then
+            ReplicatedStorage.RentEvent:FireServer("Get")
+        end
+    end
+end
 
 -- Auto Click Toggle
 FarmingSection:AddToggle({
     Name = "Auto Click Sonic",
     Default = false,
+    Flag = "AutoClickToggle",
+    Save = true,
     Callback = function(Value)
-        AutoClickEnabled = Value
-        while AutoClickEnabled do
-            task.wait(Delay)
-            local Sonic = workspace:FindFirstChild("Sonic")
-            if Sonic and Sonic:FindFirstChild("Sonic") then
-                local ClickDetector = Sonic.Sonic:FindFirstChild("ClickDetector")
-                if ClickDetector then
-                    fireclickdetector(ClickDetector)
-                end
-            end
+        _G.AutoClick = Value
+        if Value then
+            coroutine.wrap(AutoClickFunction)()
         end
     end
 })
@@ -99,17 +142,12 @@ FarmingSection:AddToggle({
 FarmingSection:AddToggle({
     Name = "Auto Collect Rings",
     Default = false,
+    Flag = "AutoCollectToggle",
+    Save = true,
     Callback = function(Value)
-        AutoCollectEnabled = Value
-        while AutoCollectEnabled do
-            task.wait(Delay)
-            for _, ring in ipairs(workspace:GetDescendants()) do
-                if ring.Name == "Ring" and ring:IsA("BasePart") then
-                    firetouchinterest(Character.Head, ring, 0)
-                    task.wait()
-                    firetouchinterest(Character.Head, ring, 1)
-                end
-            end
+        _G.AutoCollect = Value
+        if Value then
+            coroutine.wrap(AutoCollectFunction)()
         end
     end
 })
@@ -118,14 +156,12 @@ FarmingSection:AddToggle({
 FarmingSection:AddToggle({
     Name = "Auto Buy Food",
     Default = false,
+    Flag = "AutoBuyFoodToggle",
+    Save = true,
     Callback = function(Value)
-        AutoBuyFoodEnabled = Value
-        while AutoBuyFoodEnabled do
-            task.wait(1)
-            local Food = workspace:FindFirstChild("Food")
-            if Food and not Food.Full.Value then
-                ReplicatedStorage.Buy:FireServer("Sonic Food")
-            end
+        _G.AutoBuyFood = Value
+        if Value then
+            coroutine.wrap(AutoBuyFoodFunction)()
         end
     end
 })
@@ -134,16 +170,12 @@ FarmingSection:AddToggle({
 FarmingSection:AddToggle({
     Name = "Auto Get Rent",
     Default = false,
+    Flag = "AutoGetRentToggle",
+    Save = true,
     Callback = function(Value)
-        AutoGetRentEnabled = Value
-        while AutoGetRentEnabled do
-            task.wait(1)
-            local CanGetRent = ReplicatedStorage:WaitForChild("CanGetRent").Value
-            local SonicEXE = ReplicatedStorage:WaitForChild("SonicEXE").Value
-            
-            if CanGetRent and SonicEXE then
-                ReplicatedStorage.RentEvent:FireServer("Get")
-            end
+        _G.AutoGetRent = Value
+        if Value then
+            coroutine.wrap(AutoGetRentFunction)()
         end
     end
 })
