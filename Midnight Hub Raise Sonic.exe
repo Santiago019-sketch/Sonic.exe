@@ -1,0 +1,183 @@
+-- Wait for game to load
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+-- Services
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+-- Variables
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+
+-- Anti-AFK
+if getconnections then
+    for _, connection in pairs(getconnections(LocalPlayer.Idled)) do
+        connection:Disable()
+    end
+end
+
+-- Load Orion Library
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+
+-- Create Window
+local Window = OrionLib:MakeWindow({
+    Name = "Midnight Hub | Raise a Sonic",
+    HidePremium = false,
+    SaveConfig = false,
+    IntroEnabled = true,
+    IntroText = "Welcome to Midnight Hub."
+})
+
+-- Set Default WalkSpeed
+Humanoid.WalkSpeed = 50
+
+-- Create Tabs
+local MainTab = Window:MakeTab({
+    Name = "Main",
+    Icon = "rbxassetid://4483345998"
+})
+
+local CreditsTab = Window:MakeTab({
+    Name = "Credits",
+    Icon = "rbxassetid://6961018885"
+})
+
+-- Create Sections
+local FarmingSection = MainTab:AddSection({
+    Name = "Farming"
+})
+
+-- Welcome Notification
+OrionLib:MakeNotification({
+    Name = "Midnight Hub",
+    Content = "Welcome to Midnight Hub.",
+    Image = "rbxassetid://4370317928",
+    Time = 5
+})
+
+-- Variables for toggles
+local Delay = 0.1
+local AutoClickEnabled = false
+local AutoCollectEnabled = false
+local AutoBuyFoodEnabled = false
+local AutoGetRentEnabled = false
+
+-- Delay Textbox
+FarmingSection:AddTextbox({
+    Name = "Click & Collect Delay",
+    Default = "0.1",
+    TextDisappear = true,
+    Callback = function(Value)
+        Delay = tonumber(Value) or 0.1
+    end
+})
+
+-- Auto Click Toggle
+FarmingSection:AddToggle({
+    Name = "Auto Click Sonic",
+    Default = false,
+    Callback = function(Value)
+        AutoClickEnabled = Value
+        while AutoClickEnabled do
+            task.wait(Delay)
+            local Sonic = workspace:FindFirstChild("Sonic")
+            if Sonic and Sonic:FindFirstChild("Sonic") then
+                local ClickDetector = Sonic.Sonic:FindFirstChild("ClickDetector")
+                if ClickDetector then
+                    fireclickdetector(ClickDetector)
+                end
+            end
+        end
+    end
+})
+
+-- Auto Collect Rings Toggle
+FarmingSection:AddToggle({
+    Name = "Auto Collect Rings",
+    Default = false,
+    Callback = function(Value)
+        AutoCollectEnabled = Value
+        while AutoCollectEnabled do
+            task.wait(Delay)
+            for _, ring in ipairs(workspace:GetDescendants()) do
+                if ring.Name == "Ring" and ring:IsA("BasePart") then
+                    firetouchinterest(Character.Head, ring, 0)
+                    task.wait()
+                    firetouchinterest(Character.Head, ring, 1)
+                end
+            end
+        end
+    end
+})
+
+-- Auto Buy Food Toggle
+FarmingSection:AddToggle({
+    Name = "Auto Buy Food",
+    Default = false,
+    Callback = function(Value)
+        AutoBuyFoodEnabled = Value
+        while AutoBuyFoodEnabled do
+            task.wait(1)
+            local Food = workspace:FindFirstChild("Food")
+            if Food and not Food.Full.Value then
+                ReplicatedStorage.Buy:FireServer("Sonic Food")
+            end
+        end
+    end
+})
+
+-- Auto Get Rent Toggle
+FarmingSection:AddToggle({
+    Name = "Auto Get Rent",
+    Default = false,
+    Callback = function(Value)
+        AutoGetRentEnabled = Value
+        while AutoGetRentEnabled do
+            task.wait(1)
+            local CanGetRent = ReplicatedStorage:WaitForChild("CanGetRent").Value
+            local SonicEXE = ReplicatedStorage:WaitForChild("SonicEXE").Value
+            
+            if CanGetRent and SonicEXE then
+                ReplicatedStorage.RentEvent:FireServer("Get")
+            end
+        end
+    end
+})
+
+-- Credits Tab Content
+CreditsTab:AddLabel("Scripted by Midnight Team")
+CreditsTab:AddLabel("UI Library by shlex")
+
+CreditsTab:AddParagraph("Info", "Script changelogs at our Discord Server. If you find any bugs, inform us.")
+
+-- Discord Button
+CreditsTab:AddButton({
+    Name = "Copy Discord Invite",
+    Callback = function()
+        setclipboard("https://discord.gg/midnighthub")
+        print("Midnight Hub: Copied Discord Server Invite to Clipboard.")
+        OrionLib:MakeNotification({
+            Name = "Midnight Hub",
+            Content = "Copied Discord Server Invite to Clipboard.",
+            Image = "rbxassetid://4370317928",
+            Time = 2
+        })
+    end
+})
+
+-- UI Toggle Keybind
+CreditsTab:AddBind({
+    Name = "UI Toggle Keybind",
+    Default = Enum.KeyCode.RightShift,
+    Hold = false,
+    Callback = function()
+        -- Toggle UI visibility
+    end
+})
+
+-- Initialize the UI
+OrionLib:Init()
