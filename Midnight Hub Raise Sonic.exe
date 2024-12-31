@@ -1,187 +1,148 @@
-if not game:IsLoaded() then
-    game.Loaded:Wait()
-end
-
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+
+-- Create main window
 local Window = OrionLib:MakeWindow({
-    Name = "Midnight Hub | Raise a Sonic",
+    Name = "Midnight Hub | Raise a Sonic", 
     HidePremium = false,
     SaveConfig = false,
-    IntroEnabled = true,
-    IntroText = "Welcome to Midnight Hub."
+    ConfigFolder = "MidnightHub"
 })
 
--- Services
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+-- Get services and player
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 
--- Anti-AFK
-if getconnections then
-    for _, v in pairs(getconnections(LocalPlayer.Idled)) do
-        v:Disable()
-    end
-end
-
--- Set WalkSpeed
-LocalPlayer.Character:FindFirstChild("Humanoid").WalkSpeed = 50
-
--- Create Tabs
-local MainTab = Window:MakeTab({
-    Name = "Main",
+-- Create main tab
+local FarmTab = Window:MakeTab({
+    Name = "Farming",
     Icon = "rbxassetid://4483345998"
 })
 
+-- Create globals
+_G.autoClick = false
+_G.autoCollect = false
+_G.autoBuy = false
+_G.autoRent = false
+_G.clickDelay = 0.1
+
+-- Auto Click
+FarmTab:AddToggle({
+    Name = "Auto Click",
+    Default = false,
+    Flag = "autoClick",
+    Save = true,
+    Callback = function(bool)
+        _G.autoClick = bool
+        if bool then
+            while _G.autoClick and wait(_G.clickDelay) do
+                pcall(function()
+                    if workspace:FindFirstChild("Sonic") and workspace.Sonic:FindFirstChild("Sonic") then
+                        fireclickdetector(workspace.Sonic.Sonic.ClickDetector)
+                    end
+                end)
+            end
+        end
+    end
+})
+
+-- Auto Collect
+FarmTab:AddToggle({
+    Name = "Auto Collect",
+    Default = false,
+    Flag = "autoCollect",
+    Save = true,
+    Callback = function(bool)
+        _G.autoCollect = bool
+        if bool then
+            while _G.autoCollect and wait(_G.clickDelay) do
+                pcall(function()
+                    for _,v in pairs(workspace:GetDescendants()) do
+                        if v.Name == "Ring" then
+                            firetouchinterest(LocalPlayer.Character.Head, v, 0)
+                            wait()
+                            firetouchinterest(LocalPlayer.Character.Head, v, 1)
+                        end
+                    end
+                end)
+            end
+        end
+    end
+})
+
+-- Auto Buy Food
+FarmTab:AddToggle({
+    Name = "Auto Buy Food",
+    Default = false,
+    Flag = "autoBuy",
+    Save = true,
+    Callback = function(bool)
+        _G.autoBuy = bool
+        if bool then
+            while _G.autoBuy and wait(1) do
+                pcall(function()
+                    if workspace:FindFirstChild("Food") and not workspace.Food.Full.Value then
+                        ReplicatedStorage.Buy:FireServer("Sonic Food")
+                    end
+                end)
+            end
+        end
+    end
+})
+
+-- Auto Get Rent
+FarmTab:AddToggle({
+    Name = "Auto Get Rent",
+    Default = false,
+    Flag = "autoRent",
+    Save = true,
+    Callback = function(bool)
+        _G.autoRent = bool
+        if bool then
+            while _G.autoRent and wait(1) do
+                pcall(function()
+                    if ReplicatedStorage.CanGetRent.Value and ReplicatedStorage.SonicEXE.Value then
+                        ReplicatedStorage.RentEvent:FireServer("Get")
+                    end
+                end)
+            end
+        end
+    end
+})
+
+-- Click Delay
+FarmTab:AddTextbox({
+    Name = "Click Delay",
+    Default = "0.1",
+    TextDisappear = false,
+    Callback = function(value)
+        _G.clickDelay = tonumber(value) or 0.1
+    end
+})
+
+-- Credits tab
 local CreditsTab = Window:MakeTab({
     Name = "Credits",
     Icon = "rbxassetid://6961018885"
 })
 
--- Create Section
-local FarmingSection = MainTab:AddSection({
-    Name = "Farming"
-})
-
--- Welcome Notification
-OrionLib:MakeNotification({
-    Name = "Midnight Hub",
-    Content = "Welcome to Midnight Hub.",
-    Image = "rbxassetid://4370317928",
-    Time = 5
-})
-
--- Variables
-getgenv().Delay = 0.1
-
--- Auto Click Function
-local function doAutoClick()
-    while getgenv().AutoClick do 
-        task.wait(getgenv().Delay)
-        local Sonic = workspace:FindFirstChild("Sonic")
-        if Sonic and Sonic:FindFirstChild("Sonic") then
-            fireclickdetector(Sonic.Sonic.ClickDetector)
-        end
-    end
-end
-
--- Auto Collect Function
-local function doAutoCollect()
-    while getgenv().AutoCollect do 
-        task.wait(getgenv().Delay)
-        for _, v in next, workspace:GetDescendants() do
-            if v.Name == "Ring" and v then
-                firetouchinterest(LocalPlayer.Character.Head, v, 0)
-                firetouchinterest(LocalPlayer.Character.Head, v, 1)
-            end
-        end
-    end
-end
-
--- Auto Buy Food Function
-local function doAutoBuyFood()
-    while getgenv().AutoBuyFood do 
-        task.wait(1)
-        local Food = workspace:FindFirstChild("Food")
-        if Food and not Food.Full.Value then
-            ReplicatedStorage.Buy:FireServer("Sonic Food")
-        end
-    end
-end
-
--- Auto Get Rent Function
-local function doAutoGetRent()
-    while getgenv().AutoGetRent do 
-        task.wait(1)
-        if ReplicatedStorage.CanGetRent.Value and ReplicatedStorage.SonicEXE.Value then
-            ReplicatedStorage.RentEvent:FireServer("Get")
-        end
-    end
-end
-
--- Delay Setting
-FarmingSection:AddTextbox({
-    Name = "Click & Collect Delay",
-    Default = "0.1",
-    TextDisappear = true,
-    Callback = function(Value)
-        getgenv().Delay = tonumber(Value) or 0.1
-    end
-})
-
--- Auto Click Toggle
-FarmingSection:AddToggle({
-    Name = "Auto Click Sonic",
-    Default = false,
-    Callback = function(Value)
-        getgenv().AutoClick = Value
-        if Value then
-            spawn(doAutoClick)
-        end
-    end
-})
-
--- Auto Collect Toggle
-FarmingSection:AddToggle({
-    Name = "Auto Collect Rings",
-    Default = false,
-    Callback = function(Value)
-        getgenv().AutoCollect = Value
-        if Value then
-            spawn(doAutoCollect)
-        end
-    end
-})
-
--- Auto Buy Food Toggle
-FarmingSection:AddToggle({
-    Name = "Auto Buy Food",
-    Default = false,
-    Callback = function(Value)
-        getgenv().AutoBuyFood = Value
-        if Value then
-            spawn(doAutoBuyFood)
-        end
-    end
-})
-
--- Auto Get Rent Toggle
-FarmingSection:AddToggle({
-    Name = "Auto Get Rent",
-    Default = false,
-    Callback = function(Value)
-        getgenv().AutoGetRent = Value
-        if Value then
-            spawn(doAutoGetRent)
-        end
-    end
-})
-
--- Credits
-CreditsTab:AddLabel("Scripted by Midnight Team")
-CreditsTab:AddLabel("UI Library by shlex")
-
-CreditsTab:AddParagraph("Info", "Script changelogs at our Discord Server. If you find any bugs, inform us.")
-
+CreditsTab:AddLabel("Made by Midnight Team")
 CreditsTab:AddButton({
-    Name = "Copy Discord Invite",
+    Name = "Copy Discord",
     Callback = function()
-        setclipboard("https://discord.gg/midnighthub")
-        OrionLib:MakeNotification({
-            Name = "Midnight Hub",
-            Content = "Copied Discord Server Invite to Clipboard.",
-            Image = "rbxassetid://4370317928",
-            Time = 2
-        })
+        setclipboard("discord.gg/midnighthub")
     end
 })
 
--- Keybind
-CreditsTab:AddBind({
-    Name = "UI Toggle Keybind",
-    Default = Enum.KeyCode.RightShift,
-    Hold = false,
-    Callback = function()
-    end
-})
-
+-- Initialize library
 OrionLib:Init()
+
+-- Set speed
+if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+    LocalPlayer.Character.Humanoid.WalkSpeed = 50
+end
+
+-- Anti AFK
+for i,v in pairs(getconnections(LocalPlayer.Idled)) do
+    v:Disable()
+end
