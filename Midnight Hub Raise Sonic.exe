@@ -1,3 +1,5 @@
+-- Credits: mikee_str, RiotScripter
+
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
 -- Create main window
