@@ -52,10 +52,51 @@ OrionLib:MakeNotification({
 
 -- Variables
 getgenv().Delay = 0.1
-getgenv().AutoClick = false
-getgenv().AutoCollect = false
-getgenv().AutoBuyFood = false
-getgenv().AutoGetRent = false
+
+-- Auto Click Function
+local function doAutoClick()
+    while getgenv().AutoClick do 
+        task.wait(getgenv().Delay)
+        local Sonic = workspace:FindFirstChild("Sonic")
+        if Sonic and Sonic:FindFirstChild("Sonic") then
+            fireclickdetector(Sonic.Sonic.ClickDetector)
+        end
+    end
+end
+
+-- Auto Collect Function
+local function doAutoCollect()
+    while getgenv().AutoCollect do 
+        task.wait(getgenv().Delay)
+        for _, v in next, workspace:GetDescendants() do
+            if v.Name == "Ring" and v then
+                firetouchinterest(LocalPlayer.Character.Head, v, 0)
+                firetouchinterest(LocalPlayer.Character.Head, v, 1)
+            end
+        end
+    end
+end
+
+-- Auto Buy Food Function
+local function doAutoBuyFood()
+    while getgenv().AutoBuyFood do 
+        task.wait(1)
+        local Food = workspace:FindFirstChild("Food")
+        if Food and not Food.Full.Value then
+            ReplicatedStorage.Buy:FireServer("Sonic Food")
+        end
+    end
+end
+
+-- Auto Get Rent Function
+local function doAutoGetRent()
+    while getgenv().AutoGetRent do 
+        task.wait(1)
+        if ReplicatedStorage.CanGetRent.Value and ReplicatedStorage.SonicEXE.Value then
+            ReplicatedStorage.RentEvent:FireServer("Get")
+        end
+    end
+end
 
 -- Delay Setting
 FarmingSection:AddTextbox({
@@ -73,12 +114,8 @@ FarmingSection:AddToggle({
     Default = false,
     Callback = function(Value)
         getgenv().AutoClick = Value
-        while getgenv().AutoClick do 
-            task.wait(getgenv().Delay)
-            local Sonic = workspace:FindFirstChild("Sonic")
-            if Sonic and Sonic:FindFirstChild("Sonic") then
-                fireclickdetector(Sonic.Sonic.ClickDetector)
-            end
+        if Value then
+            spawn(doAutoClick)
         end
     end
 })
@@ -89,14 +126,8 @@ FarmingSection:AddToggle({
     Default = false,
     Callback = function(Value)
         getgenv().AutoCollect = Value
-        while getgenv().AutoCollect do 
-            task.wait(getgenv().Delay)
-            for _, v in next, workspace:GetDescendants() do
-                if v.Name == "Ring" and v then
-                    firetouchinterest(LocalPlayer.Character.Head, v, 0)
-                    firetouchinterest(LocalPlayer.Character.Head, v, 1)
-                end
-            end
+        if Value then
+            spawn(doAutoCollect)
         end
     end
 })
@@ -107,12 +138,8 @@ FarmingSection:AddToggle({
     Default = false,
     Callback = function(Value)
         getgenv().AutoBuyFood = Value
-        while getgenv().AutoBuyFood do 
-            task.wait(1)
-            local Food = workspace:FindFirstChild("Food")
-            if Food and not Food.Full.Value then
-                ReplicatedStorage.Buy:FireServer("Sonic Food")
-            end
+        if Value then
+            spawn(doAutoBuyFood)
         end
     end
 })
@@ -123,11 +150,8 @@ FarmingSection:AddToggle({
     Default = false,
     Callback = function(Value)
         getgenv().AutoGetRent = Value
-        while getgenv().AutoGetRent do 
-            task.wait(1)
-            if ReplicatedStorage.CanGetRent.Value and ReplicatedStorage.SonicEXE.Value then
-                ReplicatedStorage.RentEvent:FireServer("Get")
-            end
+        if Value then
+            spawn(doAutoGetRent)
         end
     end
 })
