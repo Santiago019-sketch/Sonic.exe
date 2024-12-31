@@ -24,6 +24,7 @@ _G.autoClick = false
 _G.autoCollect = false
 _G.autoBuy = false
 _G.autoRent = false
+_G.autoPetClick = false
 _G.clickDelay = 0.1
 
 -- Auto Click
@@ -39,6 +40,29 @@ FarmTab:AddToggle({
                 pcall(function()
                     if workspace:FindFirstChild("Sonic") and workspace.Sonic:FindFirstChild("Sonic") then
                         fireclickdetector(workspace.Sonic.Sonic.ClickDetector)
+                    end
+                end)
+            end
+        end
+    end
+})
+
+-- Auto Click Pets
+FarmTab:AddToggle({
+    Name = "Auto Click Pets",
+    Default = false,
+    Flag = "autoPetClick",
+    Save = true,
+    Callback = function(bool)
+        _G.autoPetClick = bool
+        if bool then
+            while _G.autoPetClick and wait(_G.clickDelay) do
+                pcall(function()
+                    -- Click all pets in the workspace
+                    for _, pet in pairs(workspace:GetChildren()) do
+                        if pet:IsA("Model") and pet:FindFirstChild("ClickDetector") then
+                            fireclickdetector(pet.ClickDetector)
+                        end
                     end
                 end)
             end
