@@ -1,4 +1,4 @@
--- Credits: mikee_str, RiotScripter
+-- Credits: mikee_str
 
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
